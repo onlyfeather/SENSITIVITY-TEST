@@ -115,10 +115,10 @@ function App() {
         {/* 标题 */}
         <h1 className="font-extrabold mb-8 tracking-tight text-center">
           <span className="block text-3xl md:text-5xl bg-clip-text text-transparent bg-gradient-to-r from-rose-300 to-purple-300 pb-2">
-            SENSITIVITY TEST
+            怕痒等级检测
           </span>
           <div className="text-sm md:text-base font-medium text-rose-200/60 mt-1 tracking-widest uppercase">
-            神经敏感度 / 怕痒等级检测
+            SENSITIVITY TEST
           </div>
         </h1>
 
@@ -181,7 +181,14 @@ function App() {
             {/* 这里加上 ref，表示整个卡片区域都会被截图 */}
             <div 
               ref={captureRef} 
-              className="bg-slate-900/40 backdrop-blur-md border border-white/10 rounded-2xl p-6 md:p-8 relative overflow-hidden"
+              // 👇 修改了 className：
+              // 1. 增加了条件逻辑：${displayScore >= 80 ? 'animate-shiver border-rose-500/50 shadow-[0_0_50px_rgba(225,29,72,0.3)]' : 'border-white/10'}
+              // 2. 解释：如果分数 > 80，启动战栗动画，同时边框变红，背景光晕变强
+              className={`bg-slate-900/40 backdrop-blur-md rounded-2xl p-6 md:p-8 relative overflow-hidden transition-all duration-300 border ${
+                displayScore >= 80 
+                  ? 'animate-shiver border-rose-500/50 shadow-[0_0_50px_rgba(225,29,72,0.3)]' 
+                  : 'border-white/10'
+              }`}
             >
               {/* 装饰水印 (截图时才会有用) */}
               <div className="absolute top-0 right-0 p-4 opacity-20 pointer-events-none">

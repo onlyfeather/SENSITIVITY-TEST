@@ -13,11 +13,8 @@ export interface FortuneResult {
 // Key: 名字 (建议全小写，方便匹配)
 // Value: 0-100 的强制分数
 const CHEAT_MAP: Record<string, number> = {
-  "root": 100,      // 给自己满分
-  "admin": 99,
-  "gemini": 0,      // 比如你想黑一下我
-  "老板": 1,        // 整蛊对象
-  "测试": 88,
+  "缇可": 13,      
+  "芊芊": 95,
 };
 
 // 辅助函数：获取分数（优先查表，查不到再算哈希）

@@ -1,3 +1,35 @@
 @import "tailwindcss";
 
-/* 在这里写自定义样式 */
+/* 在这里写自定义样式
+
+/* ...原有的 @import 等代码保持不变... */
+
+/* 定义一个完整的“生理战栗”周期：渐强 -> 剧烈 -> 渐弱 */
+@keyframes shiver {
+  /* 0% - 20%: 渐强 (前戏，身体刚开始有反应) */
+  0% { transform: translate(0, 0) rotate(0deg); }
+  10% { transform: translate(-1px, 0) rotate(-1deg); }
+  20% { transform: translate(1px, 0) rotate(1deg); }
+
+  /* 30% - 50%: 高潮 (剧烈，受到最大刺激) */
+  30% { transform: translate(-3px, 1px) rotate(-2deg); }
+  40% { transform: translate(3px, -1px) rotate(2deg); }
+  50% { transform: translate(-3px, 1px) rotate(-2deg); }
+
+  /* 60% - 100%: 渐弱 (余韵，慢慢恢复平静) */
+  60% { transform: translate(2px, 0) rotate(1deg); }
+  70% { transform: translate(-2px, 0) rotate(-1deg); }
+  80% { transform: translate(1px, 0) rotate(0.5deg); }
+  90% { transform: translate(-0.5px, 0) rotate(-0.5deg); }
+  100% { transform: translate(0, 0) rotate(0deg); }
+}
+
+/* 应用动画 */
+.animate-shiver {
+  /* duration: 0.8s (整个过程持续 0.8 秒)
+     timing-function: ease-in-out (让起步和结束更柔和)
+     iteration-count: 1 (只执行一次完整的生理周期，不再循环)
+     fill-mode: forwards (保持结束状态)
+  */
+  animation: shiver 0.8s ease-in-out 1 forwards;
+}
