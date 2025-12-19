@@ -20,7 +20,7 @@ function App() {
   const [isCapturing, setIsCapturing] = useState(false);
 
   // 获取当前页面 URL 用于生成二维码
-  const shareUrl = "how-ticklish-are-1zy3lxp6v-1196477724-4480s-projects.vercel.app";
+  const shareUrl = window.location.href;
 
   // --- [新增/修改] 页面标题与图标逻辑 ---
   useEffect(() => {
