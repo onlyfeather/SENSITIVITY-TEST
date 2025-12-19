@@ -20,7 +20,25 @@ function App() {
   const [isCapturing, setIsCapturing] = useState(false);
 
   // 获取当前页面 URL 用于生成二维码
-  const shareUrl = window.location.href;
+  const shareUrl = "how-ticklish-are-1zy3lxp6v-1196477724-4480s-projects.vercel.app";
+
+  // --- [新增/修改] 页面标题与图标逻辑 ---
+  useEffect(() => {
+    // 1. 动态修改图标 (Favicon)
+    // 关键修改：在末尾添加 'as HTMLLinkElement'
+    const link = (document.querySelector("link[rel*='icon']") || document.createElement('link')) as HTMLLinkElement;
+    
+    link.type = 'image/svg+xml';
+    link.rel = 'shortcut icon';
+    link.href = `data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔮</text></svg>`;
+    
+    document.getElementsByTagName('head')[0].appendChild(link);
+
+    // 2. 设置默认标题
+    if (!result) {
+      document.title = "怕痒等级检测";
+    }
+  }, [result]);
 
   const handlePredict = () => {
     if (!name.trim()) return;
@@ -36,6 +54,9 @@ function App() {
     setResult(data);
     setDisplayScore(0);
     setDisplayScore2(0);
+
+    // [新增] 结果生成后，修改浏览器标题，这样历史记录里能看到具体说明
+    document.title = `测试报告：${name} 的敏感度检测结果`;
   };
 
   // 截图处理函数
@@ -44,8 +65,6 @@ function App() {
     setIsCapturing(true);
 
     try {
-      // html-to-image 的用法非常简单
-      // cacheBust: true 可以防止图片跨域缓存问题
       const dataUrl = await toPng(captureRef.current, { 
         cacheBust: true,
         backgroundColor: '#0f0718', // 强制背景色
@@ -69,7 +88,6 @@ function App() {
   useEffect(() => {
     if (!result) return;
     
-    // 标志位：防止重复触发
     let effectTriggered = false;
 
     const animate = (target: number, setter: (n: number) => void) => {
@@ -83,29 +101,22 @@ function App() {
         
         setter(start);
 
-        // --- [新增] 视觉特效逻辑 ---
-        
-        // 当分数跨过 80 大关，且之前没触发过
+        // --- 视觉特效逻辑 ---
         if (start === 80 && target >= 80 && !effectTriggered) {
           effectTriggered = true;
           
-          // 💥 发射“神经火花”
           const defaults = { 
-            origin: { y: 0.7 }, // 从屏幕下方一点发射
-            zIndex: 9999,       // 保证在最上层
+            origin: { y: 0.7 }, 
+            zIndex: 9999,      
           };
 
-          // 发射一波粉紫色的粒子
           confetti({
             ...defaults,
             particleCount: 100,
             spread: 70,
             startVelocity: 40,
-            // 只使用主题色：深红、玫瑰红、紫色
             colors: ['#be123c', '#fb7185', '#c084fc'], 
-            // 形状混合：圆形和方形
             shapes: ['circle', 'square'],
-            // 消失得稍微快一点，模拟电流
             decay: 0.9,
             scalar: 1.2
           });
@@ -122,7 +133,6 @@ function App() {
     let t2: ReturnType<typeof setInterval>;
     if (result.type === 'couple' && result.score2 !== undefined) {
       setTimeout(() => {
-        // 这里其实最好先判断一下，或者直接给默认值
         t2 = animate(result.score2 || 0, setDisplayScore2);
       }, 300);
     }
@@ -157,7 +167,7 @@ function App() {
             怕痒等级检测
           </span>
           <div className="text-sm md:text-base font-medium text-rose-200/60 mt-1 tracking-widest uppercase">
-            SENSITIVITY TEST
+            Sensitivity Test
           </div>
         </h1>
 
@@ -190,7 +200,7 @@ function App() {
               value={name}
               onChange={(e) => setName(e.target.value)}
               className="w-full bg-transparent px-3 py-2 text-base md:text-lg focus:outline-none placeholder-rose-200/30 font-medium text-white border-b border-white/10"
-              placeholder={mode === 'couple' ? "输入名字 A (攻?)..." : "请输入名字..."}
+              placeholder={mode === 'couple' ? "输入你的名字..." : "请输入名字..."}
             />
             
             {/* 名字 2 (仅双人模式显示) */}
@@ -200,15 +210,16 @@ function App() {
                 value={name2}
                 onChange={(e) => setName2(e.target.value)}
                 className="w-full bg-transparent px-3 py-2 text-base md:text-lg focus:outline-none placeholder-rose-200/30 font-medium text-white border-b border-white/10"
-                placeholder="输入名字 B (受?)..."
+                placeholder="输入对方的名字..."
               />
             )}
 
+            {/* [修改] 按钮文案汉化 */}
             <button
               onClick={handlePredict}
               className="w-full mt-1 py-2.5 bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-500 hover:to-pink-500 rounded-lg font-bold text-sm md:text-base transition-all text-white shadow-lg shadow-rose-600/30 active:scale-95"
             >
-              Start Analysis
+              开始分析
             </button>
           </div>
         </div>
@@ -217,19 +228,15 @@ function App() {
         {result && (
           <div className="animate-fade-in space-y-6">
             
-            {/* 这里加上 ref，表示整个卡片区域都会被截图 */}
             <div 
               ref={captureRef} 
-              // 👇 修改了 className：
-              // 1. 增加了条件逻辑：${displayScore >= 80 ? 'animate-shiver border-rose-500/50 shadow-[0_0_50px_rgba(225,29,72,0.3)]' : 'border-white/10'}
-              // 2. 解释：如果分数 > 80，启动战栗动画，同时边框变红，背景光晕变强
               className={`bg-slate-900/40 backdrop-blur-md rounded-2xl p-6 md:p-8 relative overflow-hidden transition-all duration-300 border ${
                 displayScore >= 80 
                   ? 'animate-shiver border-rose-500/50 shadow-[0_0_50px_rgba(225,29,72,0.3)]' 
                   : 'border-white/10'
               }`}
             >
-              {/* 装饰水印 (截图时才会有用) */}
+              {/* 装饰水印 */}
               <div className="absolute top-0 right-0 p-4 opacity-20 pointer-events-none">
                  <svg className="w-16 h-16 text-rose-500" fill="currentColor" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
               </div>
@@ -282,10 +289,8 @@ function App() {
                 {result.comment}
               </p>
               
-              {/* [修复后的 Footer]：左边文字，右边二维码 */}
+              {/* Footer */}
               <div className="mt-8 pt-4 border-t border-white/5 flex justify-between items-end">
-                
-                {/* 左侧：版权信息 + 邀请文案 */}
                 <div className="flex flex-col gap-1">
                   <div className="text-[10px] text-rose-200/30 uppercase tracking-widest font-bold">
                     Sensitivity Analysis
@@ -295,17 +300,13 @@ function App() {
                   </div>
                 </div>
 
-                {/* 右侧：精致的二维码 */}
                 <div className="p-1.5 bg-rose-50 rounded-lg shadow-lg shadow-rose-500/20">
                   <QRCodeCanvas
                     value={shareUrl} 
                     size={48} 
                     level="M" 
-                    
-
                     fgColor="#be123c" 
                     bgColor="#fff1f2"
-                    
                   />
                 </div>
               </div>
