@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { generateFortune, generateCoupleFortune, type FortuneResult } from './utils/generator';
 import { toPng } from 'html-to-image';
 import { QRCodeCanvas } from 'qrcode.react';
+import confetti from 'canvas-confetti';
 
 function App() {
   // 模式状态：'single' | 'couple'
@@ -63,29 +64,67 @@ function App() {
     }
   };
 
+
   // 动画逻辑
   useEffect(() => {
     if (!result) return;
     
-    // 动画函数封装
+    // 标志位：防止重复触发
+    let effectTriggered = false;
+
     const animate = (target: number, setter: (n: number) => void) => {
       let start = 0;
-      const duration = 1000;
-      const incrementTime = duration / (target || 1); // 防止除以0
+      const duration = 1500; 
+      const incrementTime = duration / (target || 1); 
+
       const timer = setInterval(() => {
         start += 1;
         if (start > target) start = target;
+        
         setter(start);
+
+        // --- [新增] 视觉特效逻辑 ---
+        
+        // 当分数跨过 80 大关，且之前没触发过
+        if (start === 80 && target >= 80 && !effectTriggered) {
+          effectTriggered = true;
+          
+          // 💥 发射“神经火花”
+          const defaults = { 
+            origin: { y: 0.7 }, // 从屏幕下方一点发射
+            zIndex: 9999,       // 保证在最上层
+          };
+
+          // 发射一波粉紫色的粒子
+          confetti({
+            ...defaults,
+            particleCount: 100,
+            spread: 70,
+            startVelocity: 40,
+            // 只使用主题色：深红、玫瑰红、紫色
+            colors: ['#be123c', '#fb7185', '#c084fc'], 
+            // 形状混合：圆形和方形
+            shapes: ['circle', 'square'],
+            // 消失得稍微快一点，模拟电流
+            decay: 0.9,
+            scalar: 1.2
+          });
+        }
+        // --------------------
+
         if (start === target) clearInterval(timer);
       }, incrementTime);
       return timer;
     };
 
     const t1 = animate(result.score, setDisplayScore);
-    // 让 TS 自己去推断 setInterval 返回什么类型（在浏览器里是 number）
+    
     let t2: ReturnType<typeof setInterval>;
     if (result.type === 'couple' && result.score2 !== undefined) {
-      t2 = animate(result.score2, setDisplayScore2);
+      setTimeout(() => {
+        // 这里其实最好先判断一下，或者直接给默认值
+        t2 = animate(result.score2 || 0, setDisplayScore2);
+      }, 300);
     }
 
     return () => {
